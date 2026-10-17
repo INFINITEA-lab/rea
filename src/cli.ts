@@ -12,6 +12,7 @@ import { registerBinaryDiagnosticsCommands } from "./cli/binaryDiagnosticsComman
 import { registerFridaCommands } from "./cli/fridaCommands.js";
 import type { FridaInstrumentationPort } from "./application/frida/FridaInstrumentationPort.js";
 import { Cli } from "incur";
+import { installInfiniteaCliGate } from "./infiniteaHardening.js";
 
 import { createLogger, parseLogLevel } from "./logger.js";
 import { projectAnalysisError } from "./domain/analysisErrorProjection.js";
@@ -95,6 +96,7 @@ export const createCli = (
     },
     sync: false,
   });
+  installInfiniteaCliGate(cli as never, environment);
 
   registerSetupCommands(cli, logger, environment);
   registerReverseEngineeringCommands(cli, logger, environment);

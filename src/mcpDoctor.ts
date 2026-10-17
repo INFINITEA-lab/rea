@@ -1,4 +1,8 @@
 import { Client } from "@modelcontextprotocol/client";
+import {
+  INFINITEA_RUNTIME_TOOLS,
+  infiniteaRuntimeToolsEnabled,
+} from "./infiniteaHardening.js";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { Formatter, Help, z } from "incur";
 import { performance } from "node:perf_hooks";
@@ -110,6 +114,7 @@ export const runProductionMcpDoctor = async (options: McpDoctorOptions) => {
       deadline,
       controller.signal,
       catalog,
+      infiniteaRuntimeToolsEnabled(options.environment),
     );
   } catch (cause: unknown) {
     result = {
@@ -196,6 +201,7 @@ const inspectProductionMcpSession = async (
   deadline: number,
   signal: AbortSignal,
   catalog: ReturnType<typeof createCatalogIdentity>,
+  runtimeToolsEnabled: boolean,
 ) => {
   const request = requestOptions(deadline, signal);
   const [tools, prompts] = await Promise.all([
@@ -216,7 +222,10 @@ const inspectProductionMcpSession = async (
     );
   const inventory = {
     tools: compareInventory(
-      TOOL_CONTRACTS.map(({ name }) => name),
+      TOOL_CONTRACTS.map(({ name }) => name).filter(
+        // INFINITEA hardening: gated runtime tools are intentionally absent.
+        (name) => runtimeToolsEnabled || !INFINITEA_RUNTIME_TOOLS.has(name),
+      ),
       tools.tools.map(({ name }) => name),
     ),
     prompts: compareInventory(

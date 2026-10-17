@@ -52,7 +52,7 @@ For unsupported clients, use version-pinned manual stdio registration or CLI.
 
 Show the plan's exact paths, backups, changes and bundled-skill replacement.
 Obtain approval for writes when that concrete scope is not already authorized,
-then apply the same scope with `rea setup --client codex --yes`. Add
+then (INFINITEA fork: only after the user sets `REA_INFINITEA_ALLOW_SETUP=1`) apply the same scope with `rea setup --client codex --yes`. Add
 `--install-hopper` only when separately needed and explicitly approved. Do not
 install or upgrade unrelated prerequisites. Restart/reconnect, verify tools
 actually appear, and resume the original task. If they remain absent, inspect
