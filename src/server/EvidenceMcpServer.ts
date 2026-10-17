@@ -1,5 +1,8 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-
+import {
+  INFINITEA_RUNTIME_TOOLS,
+  infiniteaRuntimeToolsEnabled,
+} from "../infiniteaHardening.js";
 import {
   McpServer,
   isCallToolResult,
@@ -170,11 +173,17 @@ export class EvidenceMcpServer extends McpServer {
         : undefined;
     const registeredConfig =
       inputSchema === undefined ? config : { ...config, inputSchema };
-    return super.registerTool(
+    const registered = super.registerTool(
       name,
       registeredConfig as never,
       callback as never,
     );
+    // INFINITEA hardening: live-runtime tools start disabled and stay disabled.
+    if (INFINITEA_RUNTIME_TOOLS.has(name) && !infiniteaRuntimeToolsEnabled()) {
+      registered.disable();
+      registered.enable = () => undefined;
+    }
+    return registered;
   }
 
   /** Preserve the SDK transport lifecycle while retaining oversized errors. */

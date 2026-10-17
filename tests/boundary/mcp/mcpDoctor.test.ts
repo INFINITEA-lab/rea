@@ -1,4 +1,5 @@
 import { Client } from "@modelcontextprotocol/client";
+import { INFINITEA_RUNTIME_TOOLS } from "../../../src/infiniteaHardening.js";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -66,8 +67,12 @@ describe("production MCP doctor", () => {
       expect(result.inventory?.tools.expected).toBe(
         result.inventory?.tools.observed,
       );
+      // INFINITEA hardening: gated runtime tools are excluded unless opted in.
       expect(result.inventory?.tools.expected).toBe(
-        CATALOG_IDENTITY.counts.mcp_tools,
+        CATALOG_IDENTITY.counts.mcp_tools -
+          (process.env.REA_INFINITEA_RUNTIME_TOOLS === "1"
+            ? 0
+            : INFINITEA_RUNTIME_TOOLS.size),
       );
     },
     30_000,
@@ -128,8 +133,13 @@ describe("production MCP doctor probe validation", () => {
         environment,
       });
       expect(result.healthy).toBe(mode === "valid");
+      // INFINITEA hardening: runtime tools are disabled unless opted in.
       expect(result.inventory?.tools.observed).toBe(
-        CATALOG_IDENTITY.counts.mcp_tools,
+        CATALOG_IDENTITY.counts.mcp_tools -
+          ((environment as Record<string, string | undefined>)
+            .REA_INFINITEA_RUNTIME_TOOLS === "1"
+            ? 0
+            : INFINITEA_RUNTIME_TOOLS.size),
       );
       expect(result.inventory?.prompts.observed).toBe(
         CATALOG_IDENTITY.counts.mcp_prompts,
